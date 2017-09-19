@@ -6,6 +6,11 @@
       YM:Yusuke Maikuma
       TH:Tatsuya Hasegawa
 
+  ver2.1 @2017_9_19 by TH
+  -超音波センサーを4つに
+  -向きを台座と一致させる
+  →3番がたまに11cmを取ってしまう不具合あり(ハード面？)
+  
   ver2.0  @2017_9_4  by TH,YM
   -Servo個別操作追加
   -超音波観測追加
@@ -13,6 +18,7 @@
   -Servo個別操作とBraccio.ServoMovement()を両方使うと挙動が一部おかしくなる
   →全てをServo個別操作で行う必要がある？
   →動きを制御する関数をつくる
+  
 
   ver1.1  @2017_8_31  by TI
   -Braccio.begin() , Braccio.ServoMovement()を使わずともモータを動かせるのか？
