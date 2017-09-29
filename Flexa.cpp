@@ -168,8 +168,8 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
   if (vWrist_rot > 180) vWrist_rot = 180;
   if (vWrist_rot < 0) vWrist_rot = 0;
   //M6について
-  if (vgripper < 10) vgripper = 10;
-  if (vgripper > 73) vgripper = 73;
+  if (vgripper < 0) vgripper = 0;
+  if (vgripper > 180) vgripper = 180;
 
   int exit = 1;
 
