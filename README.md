@@ -1,10 +1,10 @@
 # FLEXA
-  FLEXA -the Flexible Anima- powered by Arduino Braccio®
-  Created & Copyrighted by
-    Team FLEXA
-      TI:Takafumi Imai
-      YM:Yusuke Maikuma
-      TH:Tatsuya Hasegawa
+  FLEXA -the Flexible Anima- powered by Arduino Braccio®<br>
+  Created & Copyrighted by<br>
+    Team FLEXA<br>
+      TI:Takafumi Imai<br>
+      YM:Yusuke Maikuma<br>
+      TH:Tatsuya Hasegawa<br>
 
   ver2.2 @2017_9_21 by TI
   -超音波センサを6つに
