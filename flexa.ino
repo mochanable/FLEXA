@@ -1,30 +1,28 @@
 #include "Flexa.h"
 #include <Servo.h>
-#include<CapacitiveSensor.h>
+#include <CapacitiveSensor.h>
 
-//=======================================サーボモータ================
-Servo base;  // create servo object to control a servo
-int pos1 = 0;    // variable to store the servo position
-Servo shoulder;  // create servo object to control a servo
-int pos2 = 0;    // variable to store the servo position
-Servo elbow;  // create servo object to control a servo
-int pos3 = 0;    // variable to store the servo position
-Servo wrist_rot;  // create servo object to control a servo
-int pos4 = 0;    // variable to store the servo position
-Servo wrist_ver;  // create servo object to control a servo
-int pos5 = 0;    // variable to store the servo position
-Servo gripper;  // create servo object to control a servo
-int pos6 = 0;    // variable to store the servo position
-//===========================================ここまで================
+//=======================================mode================
+int mode = 1;// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
+int usNumber = 0; // 反応している超音波センサの数
+int tsNumber = 0;     // 反応しているタッチセンサの数
+int tsDirection = 1;  // 1:北　2:東　3:南　4:西　5:北東　6:東南　7:南西　8:北西
+//===========================================modeここまで================
 
 //=======================================タッチセンサ================
 CapacitiveSensor cs1 = CapacitiveSensor(36, 37);
 CapacitiveSensor cs2 = CapacitiveSensor(38, 39);
 CapacitiveSensor cs3 = CapacitiveSensor(40, 41);
 CapacitiveSensor cs4 = CapacitiveSensor(42, 43);
-CapacitiveSensor cs5 = CapacitiveSensor(44, 45);
-CapacitiveSensor cs6 = CapacitiveSensor(46, 47);
-//===========================================ここまで================
+long tsVal1;//タッチセンサ1の値
+long tsVal2;
+long tsVal3;
+long tsVal4;
+boolean ts1 = false; //タッチセンサ1が反応してるか
+boolean ts2 = false;
+boolean ts3 = false;
+boolean ts4 = false;
+//===========================================タッチセンサここまで================
 
 //=======================================超音波センサ================
 #define echoPin1 22 // Echo Pin
@@ -39,7 +37,6 @@ CapacitiveSensor cs6 = CapacitiveSensor(46, 47);
 #define trigPin5 31 // Trigger Pin
 #define echoPin6 32 // Echo Pin
 #define trigPin6 33 // Trigger Pin
-
 double Duration1 = 0; //受信した間隔
 double Distance1 = 0; //距離
 double Duration2 = 0; //受信した間隔
@@ -52,45 +49,52 @@ double Duration5 = 0; //受信した間隔
 double Distance5 = 0; //距離
 double Duration6 = 0; //受信した間隔
 double Distance6 = 0; //距離
-//===========================================ここまで================
+boolean us1 = false; //超音波センサ1が反応しているか
+boolean us2 = false;
+boolean us3 = false;
+boolean us4 = false;
+boolean us5 = false;
+boolean us6 = false;
+int usLimit = 10;//超音波センサの閾値
+//===========================================超音波センサここまで================
 
+//=======================================サーボモータ================
+Servo base;  // create servo object to control a servo
+int pos1 = 90;    // variable to store the servo position
+Servo shoulder;  // create servo object to control a servo
+int pos2 = 90;    // variable to store the servo position
+Servo elbow;  // create servo object to control a servo
+int pos3 = 90;    // variable to store the servo position
+Servo wrist_rot;  // create servo object to control a servo
+int pos4 = 90;    // variable to store the servo position
+Servo wrist_ver;  // create servo object to control a servo
+int pos5 = 90;    // variable to store the servo position
+//===========================================サーボモータここまで================
 
 //=======================================動きアルゴリズム================
-//int t = 0;
-//float v = 0;
-
-//float motor1 = 0;
-//float motorPeakPrev1 = 180;
-//float motorPeakNew1 = 0;
-//float motor2 = 0;
-//float motorPeakPrev2 = 0;
-//float motorPeakNew2 = 180;
-//float motor3 = 0;
-//float motorPeakPrev3 = 180;
-//float motorPeakNew3 = 0;
-//float motor4 = 0;
-//float motorPeakPrev4 = 0;
-//float motorPeakNew4 = 180;
-
-//int angle1 = 45;
-//int angle2 = 90;
-//int angle3 = 90;
-//int angle4 = 135;
-//===========================================ここまで================
+int t = 0;
+float v = 0;
+float motorPeakPrev1 = 180;
+float motorPeakNew1 = 0;
+float motorPeakPrev2 = 0;
+float motorPeakNew2 = 180;
+float motorPeakPrev3 = 180;
+float motorPeakNew3 = 0;
+float motorPeakPrev4 = 0;
+float motorPeakNew4 = 180;
+float motorPeakPrev5 = 0;
+float motorPeakNew5 = 180;
+//===========================================動きここまで================
 
 void setup() {
   Braccio.begin();
-  Serial.begin(9600);
-
   //=======================================タッチセンサ================
   //キャリブレーションするための時間とかそういうのだと思います。
   cs1.set_CS_AutocaL_Millis(0xFFFFFFFF);
   cs2.set_CS_AutocaL_Millis(0xFFFFFFFF);
   cs3.set_CS_AutocaL_Millis(0xFFFFFFFF);
   cs4.set_CS_AutocaL_Millis(0xFFFFFFFF);
-  cs5.set_CS_AutocaL_Millis(0xFFFFFFFF);
-  cs6.set_CS_AutocaL_Millis(0xFFFFFFFF);
-  //===========================================ここまで================
+  //===========================================タッチセンサここまで================
 
   //=======================================braccio用================
   //個別操作用
@@ -99,16 +103,14 @@ void setup() {
   elbow.attach(9);
   wrist_rot.attach(6);
   wrist_ver.attach(5);
-  gripper.attach(3);
 
   //初期動作
   base.write(120);
   shoulder.write(96);
-  elbow.write(100);
+  elbow.write(90);
   wrist_rot.write(83);
   wrist_ver.write(100);
-  gripper.write(0);
-  //===========================================ここまで================
+  //===========================================braccioここまで================
 
   //=========================超音波センサ_ pinMode(echoPin, INPUT); _ pinMode(trigPin, OUTPUT);========
   //sensor1
@@ -129,77 +131,125 @@ void setup() {
   //sensor6
   pinMode(echoPin6, INPUT);
   pinMode(trigPin6, OUTPUT);
-  //===========================================ここまで================
+  //===========================================超音波センサここまで================
+}//setup
+
+void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
+  if (mode == 1) {
+
+  } else if (mode == 2) {
+    if (us1) {
+      pos1 = 0;
+      pos5 = 0;
+    } else if (us2) {
+      pos1 = 60;
+      pos5 = 0;
+    } else if (us3) {
+      pos1 = 120;
+      pos5 = 0;
+    } else if (us4) {
+      pos1 = 180;
+      pos5 = 0;
+    } else if (us5) {
+      pos1 = 60;
+      pos5 = 180;
+    } else if (us6) {
+      pos1 = 120;
+      pos5 = 180;
+    } else {
+      //error
+    }
+  } else if (mode == 3) {//接触　1:北　2:東　3:南　4:西　5:北東　6:東南　7:南西　8:北西
+    if (tsDirection == 1) {//北
+      
+    } else if (tsDirection == 2) {//東
+      
+    } else if (tsDirection == 3) {//南
+      
+    } else if (tsDirection == 4) {//西
+      
+    } else if (tsDirection == 5) {//北東
+      
+    } else if (tsDirection == 6) {//東南
+      
+    } else if (tsDirection == 7) {//南西
+      
+    } else if (tsDirection == 8) {//北西
+      
+    }
 
 
-}
+  } else if (mode == 4) {//丸まる
+//    pos1 = 90;
+//    pos2 = 90;
+//    pos3 = 90;
+//    pos4 = 90;
+//    pos5 = 90;
+  }
 
+  base.write(pos1);
+  shoulder.write(pos2);
+  elbow.write(pos3);
+  wrist_rot.write(pos4);
+  wrist_ver.write(pos5);
 
-void loop() {
+  if (mode == 4) {
+    //delay(2000);
+  }
 
   //=======================================動きアルゴリズム================
-
-  //  if (t == 361) {
-  //    t = 1;
-  //  }
-  //
-  //
   //  v = t * PI / 180;
-  //  motor1 = motorPeakPrev1 + abs(motorPeakNew1 - motorPeakPrev1) * cos(v) / 2 + (motorPeakNew1 - motorPeakPrev1) / 2;
-  //  gripper.write(motor1);
-  //  motor2 = 180 - (motorPeakPrev2 + abs(motorPeakNew2 - motorPeakPrev2) * cos(v) / 2 + (motorPeakNew2 - motorPeakPrev2) / 2);
-  //  wrist_ver.write(motor2);
-  //  motor3 = motorPeakPrev3 + abs(motorPeakNew3 - motorPeakPrev3) * cos(v) / 2 + (motorPeakNew3 - motorPeakPrev3) / 2;
-  //  wrist_rot.write(motor3);
-  //  motor4 = 180 - (motorPeakPrev4 + abs(motorPeakNew4 - motorPeakPrev4) * cos(v) / 2 + (motorPeakNew4 - motorPeakPrev4) / 2);
-  //  elbow.write(motor4);
+  //  pos1 = motorPeakPrev1 + abs(motorPeakNew1 - motorPeakPrev1) * cos(v) / 2 + (motorPeakNew1 - motorPeakPrev1) / 2;
+  //  pos2 = 180 - (motorPeakPrev2 + abs(motorPeakNew2 - motorPeakPrev2) * cos(v) / 2 + (motorPeakNew2 - motorPeakPrev2) / 2);
+  //  pos3 = motorPeakPrev3 + abs(motorPeakNew3 - motorPeakPrev3) * cos(v) / 2 + (motorPeakNew3 - motorPeakPrev3) / 2;
+  //  pos4 = 180 - (motorPeakPrev4 + abs(motorPeakNew4 - motorPeakPrev4) * cos(v) / 2 + (motorPeakNew4 - motorPeakPrev4) / 2);
   //  t++;
   //  delay(1);
+  //===========================================動きここまで================
+}//movement
 
+void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
+  if (usNumber >= 2) { //二箇所以上から近寄られたら丸まる
+    mode = 4;
+  } else if (tsNumber >= 1) {//タッチセンサが1つでも反応していたら
+    if (tsNumber >= 3) {
+      mode = 4;
+    } else {
+      mode = 3;
+      if (ts1) {//タッチセンサ1が反応している
+        if (ts2) {
+          tsDirection = 5;//1&2→北東
+        } else if (ts4) {
+          tsDirection = 8;//1&4→北西
+        } else {
+          tsDirection = 1;//1のみ
+        }
+      } else if (ts2) {
+        if (ts3) {
+          tsDirection = 6;//2&3→南東
+        } else {
+          tsDirection = 2;//2のみ
+        }
+      } else if (ts3) {
+        if (ts4) {
+          tsDirection = 7;//3&4→南西
+        } else {
+          tsDirection = 3;//3のみ
+        }
+      } else if (ts4) {
+        tsDirection = 4;//4のみ
+      }
+    }
+  } else if (usNumber == 1) {//タッチセンサは反応していなくて、超音波が一つだけ反応している
+    mode = 2;
+  } else {//タッチセンサも超音波センサも反応していない
+    mode = 1;
+  }
+}//modeCheck
 
-  //  Serial.print("t:" );
-  //  Serial.print(t);
-  //  Serial.print("\t");
-  //  Serial.print("v:" );
-  //  Serial.print(v);
-  //  Serial.print("\t");
-  //  Serial.print("Prev:" );
-  //  Serial.print(motorPeakPrev1);
-  //  Serial.print("\t");
-  //  Serial.print("New:" );
-  //  Serial.print(motorPeakNew1);
-  //  Serial.print("\t");
-  //  Serial.print("motor:" );
-  //  Serial.print(motor1);
-  //  Serial.print("\n");
+void loop() { //=======================================loop================================================================================================================================
 
-  //  base.write(120);
-  //  shoulder.write(90);
-  //  elbow.write(100);
-  //  wrist_rot.write(83);
-  //  wrist_ver.write(100);
-  //  gripper.write(0);
-  //  delay(300);
-  //
-  //  base.write(120);
-  //  shoulder.write(96);
-  //  elbow.write(80);
-  //  wrist_rot.write(103);
-  //  wrist_ver.write(70);
-  //  gripper.write(0);
-  //  delay(300);
-  //
-  //  base.write(120);
-  //  shoulder.write(96);
-  //  elbow.write(120);
-  //  wrist_rot.write(63);
-  //  wrist_ver.write(130);
-  //  gripper.write(0);
-  //  delay(300);
-  //===========================================ここまで================
-
-
-  //=======================================超音波センサ================
+  //=======================================超音波センサ===============
   //sensor1
   digitalWrite(trigPin1, LOW);
   delayMicroseconds(2);
@@ -248,7 +298,7 @@ void loop() {
     Distance4 = Duration4 * 340 * 100 / 1000000; // 音速を340m/sに設定
   }
 
-  //  //sensor5
+  //sensor5
   digitalWrite(trigPin5, LOW);
   delayMicroseconds(2);
   digitalWrite( trigPin5, HIGH ); //超音波を出力
@@ -260,7 +310,7 @@ void loop() {
     Distance5 = Duration5 * 340 * 100 / 1000000; // 音速を340m/sに設定
   }
 
-  //  //sensor6
+  //sensor6
   digitalWrite(trigPin6, LOW);
   delayMicroseconds(2);
   digitalWrite( trigPin6, HIGH ); //超音波を出力
@@ -271,131 +321,83 @@ void loop() {
     Duration6 = Duration6 / 2; //往復距離を半分にする
     Distance6 = Duration6 * 340 * 100 / 1000000; // 音速を340m/sに設定
   }
+  //=====値の処理=====
+  usNumber = 0;
+  if (Distance1 <= usLimit) {
+    us1 = true;
+    usNumber++;
+  } else if (Distance2 <= usLimit) {
+    us2 = true;
+    usNumber++;
+  } else if (Distance3 <= usLimit) {
+    us3 = true;
+    usNumber++;
+  } else if (Distance4 <= usLimit) {
+    us4 = true;
+    usNumber++;
+  } else if (Distance5 <= usLimit) {
+    us5 = true;
+    usNumber++;
+  } else if (Distance6 <= usLimit) {
+    us6 = true;
+    usNumber++;
+  }
+  //===========================================超音波センサここまで================
 
-
-  int limit1 = 10;
-  int limit2 = 100;
-  //===========================================ここまで================
-
-
-  //=======================================タッチセンサ================
+  //===========================================タッチセンサ================
   // ここの値はノイズをとる強さ：大きくするとノイズ◯/遅い : 小さくするとノイズ◯/速い
-  long val1 = cs1.capacitiveSensor(30);
-  long val2 = cs2.capacitiveSensor(30);
-  long val3 = cs3.capacitiveSensor(30);
-  long val4 = cs4.capacitiveSensor(30);
-  long val5 = cs5.capacitiveSensor(30);
-  long val6 = cs6.capacitiveSensor(30);
-  //===========================================ここまで================
-
-  //=======================================センサに応じた動きの指示================
-
-  //=====超音波パート=====
-  if (Distance1 <= limit1) {
-    base.write(0);
-    gripper.write(0);
-
-    //wrist_ver.write(30);
-    delay(1000);
+  tsVal1 = cs1.capacitiveSensor(30);
+  tsVal2 = cs2.capacitiveSensor(30);
+  tsVal3 = cs3.capacitiveSensor(30);
+  tsVal4 = cs4.capacitiveSensor(30);
+  tsNumber = 0;
+  if (tsVal1 > 100) {
+    ts1 = true;
+    tsNumber++;
+  } else if (tsVal2 > 100) {
+    ts2 = true;
+    tsNumber++;
+  } else if (tsVal3 > 100) {
+    ts3 = true;
+    tsNumber++;
+  } else if (tsVal4 > 100) {
+    ts4 = true;
+    tsNumber++;
   }
-  else if (Distance6 <= limit1) {
-    base.write(60);
-    gripper.write(0);
-
-    //wrist_ver.write(60);
-    delay(1000);
-  }
-  else if (Distance5 <= limit1) {
-    base.write(120);
-    gripper.write(0);
-
-    //wrist_ver.write(90);
-    delay(1000);
-  }
-  else if (Distance4 <= limit1) {
-    base.write(180);
-    gripper.write(0);
-
-    delay(1000);
-  }
-  else if (Distance3 <= limit1) {
-    base.write(60);
-    gripper.write(180);
-
-    delay(1000);
-  }
-  else if (Distance2 <= limit1) {
-    base.write(120);
-    gripper.write(180);
-
-    delay(1000);
-  }
-  //  else {
-  //    base.write(90);
-  //    gripper.write(180);
-  //
-  //    delay(500);
-  //  }
-  //=====ここまで=====
-
-  //=====タッチパート=====
-  if (val1 > 100) {
-    gripper.write(50);
-  }
-  else if (val2 > 100) {
-    gripper.write(60);
-  }
-  else if (val3 > 100) {
-    gripper.write(80);
-  }
-  else if (val4 > 100) {
-    gripper.write(100);
-  }
-  else if (val5 > 100) {
-    gripper.write(120);
-  }
-  else if (val6 > 100) {
-    gripper.write(140);
-  }
-  //=====ここまで=====
-
-
-  //===========================================ここまで================
-
+  //===========================================タッチセンサここまで================
   //放電
   delay(10);
 
-
   //=======================================シリアルプリント================
-  //音波
-  Serial.print("onpa_dist:");
-  Serial.print(Distance1);
-  Serial.print("cm \t");
-  Serial.print(Distance2);
-  Serial.print("cm \t");
-  Serial.print(Distance3);
-  Serial.print("cm \t");
-  Serial.print(Distance4);
-  Serial.print("cm \t");
-  Serial.print(Distance5);
-  Serial.print("cm \t");
-  Serial.print(Distance6);
-  Serial.print("cm \n");
+  //  Serial.begin(9600);
+  //超音波
+  //  Serial.print("onpa_dist:");
+  //  Serial.print(Distance1);
+  //  Serial.print("cm \t");
+  //  Serial.print(Distance2);
+  //  Serial.print("cm \t");
+  //  Serial.print(Distance3);
+  //  Serial.print("cm \t");
+  //  Serial.print(Distance4);
+  //  Serial.print("cm \t");
+  //  Serial.print(Distance5);
+  //  Serial.print("cm \t");
+  //  Serial.print(Distance6);
+  //  Serial.print("cm \n");
 
   //タッチ
-  Serial.print("touch_value:");
-  Serial.print(val1);
-  Serial.print(" \t");
-  Serial.print(val2);
-  Serial.print(" \t");
-  Serial.print(val3);
-  Serial.print(" \t");
-  Serial.print(val4);
-  Serial.print(" \t");
-  Serial.print(val5);
-  Serial.print(" \t");
-  Serial.println(val6);
-  Serial.print(" \n");
+  //  Serial.print("touch_value:");
+  //  Serial.print(tsVal1);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal2);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal3);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal4);
+  //  Serial.print(" \n");
+  //===========================================シリアルプリントここまで================
 
+  modeCheck();
+  movement();
+}//loop
 
-}

@@ -21,14 +21,14 @@ extern Servo shoulder;
 extern Servo elbow;
 extern Servo wrist_rot;
 extern Servo wrist_ver;
-extern Servo gripper;
+//extern Servo gripper;
 
 extern int step_base = 120;
 extern int step_shoulder = 96;
 extern int step_elbow = 100;
 extern int step_wrist_rot = 100;
 extern int step_wrist_ver = 83;
-extern int step_gripper = 10;
+//extern int step_gripper = 10;
 
 /*もともと
   extern int step_base = 0;
@@ -66,7 +66,7 @@ unsigned int _Braccio::begin(int soft_start_level) {
   elbow.attach(9);
   wrist_rot.attach(6);
   wrist_ver.attach(5);
-  gripper.attach(3);
+//  gripper.attach(3);
 
   //For each step motor this set up the initial degree モータの初期角度を設定
   base.write(120);
@@ -74,14 +74,14 @@ unsigned int _Braccio::begin(int soft_start_level) {
   elbow.write(100);
   wrist_ver.write(100);
   wrist_rot.write(83);
-  gripper.write(0);
+ // gripper.write(0);
   //Previous step motor position
   step_base = 120;
   step_shoulder = 96;
   step_elbow = 100;
   step_wrist_ver = 100;
   step_wrist_rot = 83;
-  step_gripper = 0;
+  //step_gripper = 0;
 
   /*もともと
     //For each step motor this set up the initial degree
@@ -144,6 +144,7 @@ void _Braccio::_softStart(int soft_start_level) {
    @param vWrist_rot next wrist vertical servo motor degree
    @param vgripper next gripper servo motor degree
 */
+/*
 int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow, int vWrist_ver, int vWrist_rot, int vgripper) {
 
   // Check values, to avoid dangerous positions for the Braccio
@@ -168,8 +169,8 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
   if (vWrist_rot > 180) vWrist_rot = 180;
   if (vWrist_rot < 0) vWrist_rot = 0;
   //M6について
-  if (vgripper < 0) vgripper = 0;
-  if (vgripper > 180) vgripper = 180;
+ // if (vgripper < 0) vgripper = 0;
+ // if (vgripper > 180) vgripper = 180;
 
   int exit = 1;
 
@@ -247,6 +248,7 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
       }
     }
     //M6について
+    /*
     if (vgripper != step_gripper)
     {
       gripper.write(step_gripper);
@@ -265,16 +267,18 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
     //It checks if all the servo motors are in the desired position　すべてのモータの位置が望んだ位置にあるかをチェック
     if ((vBase == step_base) && (vShoulder == step_shoulder)
         && (vElbow == step_elbow) && (vWrist_ver == step_wrist_rot)
-        && (vWrist_rot == step_wrist_ver) && (vgripper == step_gripper)) {
+        && (vWrist_rot == step_wrist_ver) 
+        //&& (vgripper == step_gripper))
+        {
       step_base = vBase;
       step_shoulder = vShoulder;
       step_elbow = vElbow;
       step_wrist_rot = vWrist_ver;
       step_wrist_ver = vWrist_rot;
-      step_gripper = vgripper;
+     // step_gripper = vgripper;
       exit = 0;
     } else {
       exit = 1;
     }
   }
-}
+}*/
