@@ -22,6 +22,10 @@ boolean ts1 = false; //タッチセンサ1が反応してるか
 boolean ts2 = false;
 boolean ts3 = false;
 boolean ts4 = false;
+int tsLimit1 = 600;
+int tsLimit2 = 120;
+int tsLimit3 = 150;
+int tsLimit4 = 120;
 //===========================================タッチセンサここまで================
 
 //=======================================超音波センサ================
@@ -49,13 +53,14 @@ double Duration5 = 0; //受信した間隔
 double Distance5 = 0; //距離
 double Duration6 = 0; //受信した間隔
 double Distance6 = 0; //距離
-boolean us1 = false; //超音波センサ1が反応しているか
-boolean us2 = false;
-boolean us3 = false;
-boolean us4 = false;
-boolean us5 = false;
-boolean us6 = false;
-int usLimit = 10;//超音波センサの閾値
+int us1 = 0; //超音波センサ1が反応しているか　　0:overLimitFar 1:FarとNearの間　2:Nearより近い
+int us2 = 0;
+int us3 = 0;
+int us4 = 0;
+int us5 = 0;
+int us6 = 0;
+int usLimitFar = 120;//超音波センサの閾値
+int usLimitNear = 60;
 //===========================================超音波センサここまで================
 
 //=======================================サーボモータ================
@@ -138,55 +143,94 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
   if (mode == 1) {
 
   } else if (mode == 2) {
-    if (us1) {
+    if (us1 >= 1) {
       pos1 = 0;
       pos5 = 0;
-    } else if (us2) {
-      pos1 = 60;
-      pos5 = 0;
-    } else if (us3) {
+      if (us1 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
+    } else if (us2 >= 1) {
       pos1 = 120;
-      pos5 = 0;
-    } else if (us4) {
+      pos5 = 180;
+      if (us2 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
+    } else if (us3 >= 1) {
+      pos1 = 60;
+      pos5 = 180;
+      if (us3 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
+    } else if (us4 >= 1) {
       pos1 = 180;
       pos5 = 0;
-    } else if (us5) {
-      pos1 = 60;
-      pos5 = 180;
-    } else if (us6) {
+      if (us4 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
+    } else if (us5 >= 1) {
       pos1 = 120;
-      pos5 = 180;
+      pos5 = 0;
+      if (us5 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
+    } else if (us6 >= 1) {
+      pos1 = 60;
+      pos5 = 0;
+      if (us6 == 2) {
+        pos3 = 120;
+      } else {
+        pos3 = 90;
+      }
     } else {
       //error
     }
   } else if (mode == 3) {//接触　1:北　2:東　3:南　4:西　5:北東　6:東南　7:南西　8:北西
     if (tsDirection == 1) {//北
-      
+
     } else if (tsDirection == 2) {//東
-      
+
     } else if (tsDirection == 3) {//南
-      
+
     } else if (tsDirection == 4) {//西
-      
+
     } else if (tsDirection == 5) {//北東
-      
+
     } else if (tsDirection == 6) {//東南
-      
+
     } else if (tsDirection == 7) {//南西
-      
+
     } else if (tsDirection == 8) {//北西
-      
+
     }
 
 
   } else if (mode == 4) {//丸まる
-//    pos1 = 90;
-//    pos2 = 90;
-//    pos3 = 90;
-//    pos4 = 90;
-//    pos5 = 90;
+    //    pos1 = 90;
+    //    pos2 = 90;
+    //    pos3 = 90;
+    //    pos4 = 90;
+    //    pos5 = 90;
   }
-
+  //=======================================動きアルゴリズム================
+  //  v = t * PI / 180;
+  //  pos1 = motorPeakPrev1 + abs(motorPeakNew1 - motorPeakPrev1) * cos(v) / 2 + (motorPeakNew1 - motorPeakPrev1) / 2;
+  //  pos2 = motorPeakPrev2 + abs(motorPeakNew2 - motorPeakPrev2) * cos(v) / 2 + (motorPeakNew2 - motorPeakPrev2) / 2;
+  //  pos3 = motorPeakPrev3 + abs(motorPeakNew3 - motorPeakPrev3) * cos(v) / 2 + (motorPeakNew3 - motorPeakPrev3) / 2;
+  //  pos4 = motorPeakPrev4 + abs(motorPeakNew4 - motorPeakPrev4) * cos(v) / 2 + (motorPeakNew4 - motorPeakPrev4) / 2;
+  //  pos5 = motorPeakPrev5 + abs(motorPeakNew5 - motorPeakPrev5) * cos(v) / 2 + (motorPeakNew5 - motorPeakPrev5) / 2;
+  //  t++;
+  //  delay(1);
+  //===========================================動きここまで================
   base.write(pos1);
   shoulder.write(pos2);
   elbow.write(pos3);
@@ -197,20 +241,12 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
     //delay(2000);
   }
 
-  //=======================================動きアルゴリズム================
-  //  v = t * PI / 180;
-  //  pos1 = motorPeakPrev1 + abs(motorPeakNew1 - motorPeakPrev1) * cos(v) / 2 + (motorPeakNew1 - motorPeakPrev1) / 2;
-  //  pos2 = 180 - (motorPeakPrev2 + abs(motorPeakNew2 - motorPeakPrev2) * cos(v) / 2 + (motorPeakNew2 - motorPeakPrev2) / 2);
-  //  pos3 = motorPeakPrev3 + abs(motorPeakNew3 - motorPeakPrev3) * cos(v) / 2 + (motorPeakNew3 - motorPeakPrev3) / 2;
-  //  pos4 = 180 - (motorPeakPrev4 + abs(motorPeakNew4 - motorPeakPrev4) * cos(v) / 2 + (motorPeakNew4 - motorPeakPrev4) / 2);
-  //  t++;
-  //  delay(1);
-  //===========================================動きここまで================
+
 }//movement
 
 void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
   if (usNumber >= 2) { //二箇所以上から近寄られたら丸まる
-    mode = 4;
+    //mode = 4;
   } else if (tsNumber >= 1) {//タッチセンサが1つでも反応していたら
     if (tsNumber >= 3) {
       mode = 4;
@@ -245,6 +281,7 @@ void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　m
   } else {//タッチセンサも超音波センサも反応していない
     mode = 1;
   }
+  movement();
 }//modeCheck
 
 void loop() { //=======================================loop================================================================================================================================
@@ -323,23 +360,53 @@ void loop() { //=======================================loop=====================
   }
   //=====値の処理=====
   usNumber = 0;
-  if (Distance1 <= usLimit) {
-    us1 = true;
+  us1 = us2 = us3 = us4 = us5 = us6 = 0;
+  if (Distance1 <= usLimitFar) {
+    if (Distance1 <= usLimitNear) {
+      us1 = 2;
+    } else {
+      us1 = 1;
+    }
     usNumber++;
-  } else if (Distance2 <= usLimit) {
-    us2 = true;
+  }
+  if (Distance2 <= usLimitFar) {
+    if (Distance2 <= usLimitNear) {
+      us2 = 2;
+    } else {
+      us2 = 1;
+    }
     usNumber++;
-  } else if (Distance3 <= usLimit) {
-    us3 = true;
+  }
+  if (Distance3 <= usLimitFar) {
+    if (Distance3 <= usLimitNear) {
+      us3 = 2;
+    } else {
+      us3 = 1;
+    }
     usNumber++;
-  } else if (Distance4 <= usLimit) {
-    us4 = true;
+  }
+  if (Distance4 <= usLimitFar) {
+    if (Distance4 <= usLimitNear) {
+      us4 = 2;
+    } else {
+      us4 = 1;
+    }
     usNumber++;
-  } else if (Distance5 <= usLimit) {
-    us5 = true;
+  }
+  if (Distance5 <= usLimitFar) {
+    if (Distance5 <= usLimitNear) {
+      us5 = 2;
+    } else {
+      us5 = 1;
+    }
     usNumber++;
-  } else if (Distance6 <= usLimit) {
-    us6 = true;
+  }
+  if (Distance6 <= usLimitFar) {
+    if (Distance6 <= usLimitNear) {
+      us6 = 2;
+    } else {
+      us6 = 1;
+    }
     usNumber++;
   }
   //===========================================超音波センサここまで================
@@ -351,16 +418,20 @@ void loop() { //=======================================loop=====================
   tsVal3 = cs3.capacitiveSensor(30);
   tsVal4 = cs4.capacitiveSensor(30);
   tsNumber = 0;
-  if (tsVal1 > 100) {
+  ts1 = ts2 = ts3 = ts4 = false;
+  if (tsVal1 > tsLimit1) {
     ts1 = true;
     tsNumber++;
-  } else if (tsVal2 > 100) {
+  }
+  if (tsVal2 > tsLimit2) {
     ts2 = true;
     tsNumber++;
-  } else if (tsVal3 > 100) {
+  }
+  if (tsVal3 > tsLimit3) {
     ts3 = true;
     tsNumber++;
-  } else if (tsVal4 > 100) {
+  }
+  if (tsVal4 > tsLimit4) {
     ts4 = true;
     tsNumber++;
   }
@@ -368,22 +439,40 @@ void loop() { //=======================================loop=====================
   //放電
   delay(10);
 
-  //=======================================シリアルプリント================
-  //  Serial.begin(9600);
-  //超音波
-  //  Serial.print("onpa_dist:");
-  //  Serial.print(Distance1);
-  //  Serial.print("cm \t");
-  //  Serial.print(Distance2);
-  //  Serial.print("cm \t");
-  //  Serial.print(Distance3);
-  //  Serial.print("cm \t");
-  //  Serial.print(Distance4);
-  //  Serial.print("cm \t");
-  //  Serial.print(Distance5);
-  //  Serial.print("cm \t");
-  //  Serial.print(Distance6);
-  //  Serial.print("cm \n");
+  //  =======================================シリアルプリント================
+  Serial.begin(9600);
+  // 超音波
+  //    Serial.print("onpa_dist:");
+  //    Serial.print(Distance1);
+  //    Serial.print("cm \t");
+  //    Serial.print(Distance2);
+  //    Serial.print("cm \t");
+  //    Serial.print(Distance3);
+  //    Serial.print("cm \t");
+  //    Serial.print(Distance4);
+  //    Serial.print("cm \t");
+  //    Serial.print(Distance5);
+  //    Serial.print("cm \t");
+  //    Serial.print(Distance6);
+  //    Serial.print("cm \n");
+  //  Serial.print(us1);
+  //  Serial.print("\t");
+  //  Serial.print(us2);
+  //  Serial.print("\t");
+  //  Serial.print(us3);
+  //  Serial.print("\t");
+  //  Serial.print(us4);
+  //  Serial.print("\t");
+  //  Serial.print(us5);
+  //  Serial.print("\t");
+  //  Serial.print(us6);
+  //  Serial.print("\t");
+  Serial.print(mode);
+  Serial.print("\t");
+  Serial.print(tsNumber);
+  Serial.print("\t");
+  //  Serial.print(usNumber);
+  //  Serial.print("\n");
 
   //タッチ
   //  Serial.print("touch_value:");
@@ -398,6 +487,5 @@ void loop() { //=======================================loop=====================
   //===========================================シリアルプリントここまで================
 
   modeCheck();
-  movement();
 }//loop
 
