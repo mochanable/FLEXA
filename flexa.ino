@@ -155,10 +155,8 @@ void setup() {
 }//setup
 
 //void loop() {//=============================キャリブレーション用、ココからしたを全部コメントアウト
-//  gripper.slowmove(0,80);
-//  delay(3000);
-//  gripper.slowmove(180,80);
-//  delay(3000);
+//  base.slowmove(90,80);
+//  delay(1000);
 //}
 
 void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
@@ -193,12 +191,13 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
     sp5 = 60;
     int hoge = 170;
     pos2 = pos3 = pos4 = 90;
+      //60度づつずらす！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
     if (us1 >= 1) {
       pos1 = 0;
       pos5 = 0;
-      if (us1 == 2) {
+      if (us1 == 2) {//近い
         pos3 = hoge - Distance1;
-      } else {
+      } else {//遠い
         pos3 = 90;
       }
     } else if (us2 >= 1) {
@@ -212,16 +211,18 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
     } else if (us3 >= 1) {
       pos1 = 60;
       pos5 = 180;
-      if (us3 == 2) {
+      if (us3 == 2) {//近い
         pos3 = 180 + Distance3 - hoge;
-      } else {
+        pos4 = hoge - Distance3;
+      } else {//遠い
         pos3 = 90;
       }
     } else if (us4 >= 1) {
       pos1 = 180;
       pos5 = 0;
       if (us4 == 2) {
-        pos3 = hoge - Distance4;
+        pos3 = 180 - (hoge - Distance4);
+        pos4 = hoge - Distance4;
       } else {
         pos3 = 90;
       }
@@ -229,7 +230,8 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
       pos1 = 120;
       pos5 = 0;
       if (us5 == 2) {
-        pos3 = hoge - Distance5;
+        pos3 = 180 - (hoge - Distance5);
+        pos4 = hoge - Distance5;
       } else {
         pos3 = 90;
       }
@@ -237,7 +239,8 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
       pos1 = 60;
       pos5 = 0;
       if (us6 == 2) {
-        pos3 = hoge - Distance6;
+        pos3 = 180 - (hoge - Distance6);
+        pos4 = hoge - Distance6;
       } else {
         pos3 = 90;
       }
@@ -581,3 +584,4 @@ void loop() { //=======================================loop=====================
 
   modeCheck();
 }//loop
+
