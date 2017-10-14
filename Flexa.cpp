@@ -15,29 +15,21 @@
 */
 
 #include "Flexa.h"
+#include <VarSpeedServo.h>
 
-extern Servo base;
-extern Servo shoulder;
-extern Servo elbow;
-extern Servo wrist_rot;
-extern Servo wrist_ver;
-//extern Servo gripper;
+extern VarSpeedServo base;
+extern VarSpeedServo shoulder;
+extern VarSpeedServo elbow;
+extern VarSpeedServo wrist_rot;
+extern VarSpeedServo wrist_ver;
+extern VarSpeedServo gripper;
 
-extern int step_base = 120;
-extern int step_shoulder = 96;
-extern int step_elbow = 100;
-extern int step_wrist_rot = 100;
-extern int step_wrist_ver = 83;
-//extern int step_gripper = 10;
-
-/*もともと
-  extern int step_base = 0;
-  extern int step_shoulder = 45;
-  extern int step_elbow = 180;
-  extern int step_wrist_rot = 180;
-  extern int step_wrist_ver = 90;
-  extern int step_gripper = 10;
-*/
+extern int step_base = 90;
+extern int step_shoulder = 95;
+extern int step_elbow = 82;
+extern int step_wrist_rot = 83;
+extern int step_wrist_ver = 85;
+extern int step_gripper = 0;
 
 _Braccio Braccio;
 
@@ -66,39 +58,23 @@ unsigned int _Braccio::begin(int soft_start_level) {
   elbow.attach(9);
   wrist_rot.attach(6);
   wrist_ver.attach(5);
-//  gripper.attach(3);
+  gripper.attach(3);
 
   //For each step motor this set up the initial degree モータの初期角度を設定
-  base.write(120);
-  shoulder.write(96);
-  elbow.write(100);
-  wrist_ver.write(100);
-  wrist_rot.write(83);
- // gripper.write(0);
+  base.write(90);
+  shoulder.write(95);
+  elbow.write(82);
+  wrist_ver.write(83);
+  wrist_rot.write(85);
+  gripper.write(0);
   //Previous step motor position
-  step_base = 120;
-  step_shoulder = 96;
-  step_elbow = 100;
-  step_wrist_ver = 100;
-  step_wrist_rot = 83;
-  //step_gripper = 0;
+  step_base = 90;
+  step_shoulder = 95;
+  step_elbow = 82;
+  step_wrist_ver = 83;
+  step_wrist_rot = 85;
+  step_gripper = 0;
 
-  /*もともと
-    //For each step motor this set up the initial degree
-    base.write(0);
-    shoulder.write(40);
-    elbow.write(180);
-    wrist_ver.write(170);
-    wrist_rot.write(0);
-    gripper.write(73);
-    //Previous step motor position
-    step_base = 0;
-    step_shoulder = 40;
-    step_elbow = 180;
-    step_wrist_ver = 170;
-    step_wrist_rot = 0;
-    step_gripper = 73;
-  */
   if (soft_start_level != SOFT_START_DISABLED)
     _softStart(soft_start_level);
   return 1;
@@ -145,7 +121,7 @@ void _Braccio::_softStart(int soft_start_level) {
    @param vgripper next gripper servo motor degree
 */
 /*
-int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow, int vWrist_ver, int vWrist_rot, int vgripper) {
+  int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow, int vWrist_ver, int vWrist_rot, int vgripper) {
 
   // Check values, to avoid dangerous positions for the Braccio
   //危険な位置を避けるために値をチェックする！
@@ -169,8 +145,8 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
   if (vWrist_rot > 180) vWrist_rot = 180;
   if (vWrist_rot < 0) vWrist_rot = 0;
   //M6について
- // if (vgripper < 0) vgripper = 0;
- // if (vgripper > 180) vgripper = 180;
+  // if (vgripper < 0) vgripper = 0;
+  // if (vgripper > 180) vgripper = 180;
 
   int exit = 1;
 
@@ -267,7 +243,7 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
     //It checks if all the servo motors are in the desired position　すべてのモータの位置が望んだ位置にあるかをチェック
     if ((vBase == step_base) && (vShoulder == step_shoulder)
         && (vElbow == step_elbow) && (vWrist_ver == step_wrist_rot)
-        && (vWrist_rot == step_wrist_ver) 
+        && (vWrist_rot == step_wrist_ver)
         //&& (vgripper == step_gripper))
         {
       step_base = vBase;
@@ -281,4 +257,4 @@ int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow,
       exit = 1;
     }
   }
-}*/
+  }*/
