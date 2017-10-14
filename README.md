@@ -2,21 +2,29 @@
 ##### FLEXA -the Flexible Anima- powered by Arduino Braccio®  
 ##### Created & Copyrighted by  
 ##### Team FLEXA  
-###### TI:Takafumi Imai  
-###### YM:Yusuke Maikuma  
-###### TH:Tatsuya Hasegawa  
+###### Takafumi Imai  
+###### Yusuke Maikuma  
+###### Tatsuya Hasegawa  
 
-#### ver2.2 @2017_9_21 by TI
+#### ver 4.0 @2017_10_14
+* VarSpeedServo.hの導入
+* mode1,3,4の動きを追加
+* mode3,4を継続するためのmodeCheckを追加
+
+#### ver 3.0~3.2 @2017_10_9 ~ @2017_10_13
+* いろいろ追加
+
+#### ver2.2 @2017_9_21
 * 超音波センサを6つに
 * 2.新しい台座に移植
 * ソフトボディも改良
 
-#### ver2.1 @2017_9_19 by TH
+#### ver2.1 @2017_9_19
 * 超音波センサーを4つに
 * 向きを台座と一致させる
 * 3番がたまに11cmを取ってしまう不具合あり(ハード面？)
 
-#### ver2.0  @2017_9_4  by TH,YM
+#### ver2.0  @2017_9_4
 * Servo個別操作追加
 * 超音波観測追加
 * 方向転換・回避動作テスト追加
@@ -24,7 +32,7 @@
 * 全てをServo個別操作で行う必要がある？
 * 動きを制御する関数をつくる
 
-#### ver1.1  @2017_8_31  by TI
+#### ver1.1  @2017_8_31
 * Braccio.begin() , Braccio.ServoMovement()を使わずともモータを動かせるのか？
 * なかなかうまく行かない。。
 * ただ、Braccio.hとBraccio.cppをもとに、Flexa.hとFlexa.cppを作成
