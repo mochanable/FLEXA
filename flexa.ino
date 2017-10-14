@@ -8,8 +8,10 @@ int usNumber = 0; // 反応している超音波センサの数
 int tsNumber = 0; // 反応しているタッチセンサの数
 int tsDirection = 1;  // 1:北　2:東　3:南　4:西　5:北東　6:東南　7:南西　8:北西
 unsigned long time;
-unsigned long timePrev;
+unsigned long randomPrev;//ランダム
+unsigned long touchTimer;//一定時間タッチしてないともとに戻る
 int touchPoint = 0; //タッチし続けると貯まるポイント
+int maruPoint = 0;//丸まり続けたら元に戻る
 //===========================================modeここまで================
 
 //=======================================タッチセンサ================
@@ -26,9 +28,9 @@ boolean ts2 = false;
 boolean ts3 = false;
 boolean ts4 = false;
 int tsLimit1 = 300;//タッチセンサの閾値
-int tsLimit2 = 120;
-int tsLimit3 = 150;
-int tsLimit4 = 120;
+int tsLimit2 = 300;
+int tsLimit3 = 300;
+int tsLimit4 = 300;
 //===========================================タッチセンサここまで================
 
 //=======================================超音波センサ================
@@ -62,7 +64,7 @@ int us3 = 0;
 int us4 = 0;
 int us5 = 0;
 int us6 = 0;
-int usLimitFar = 120;//超音波センサの閾値
+int usLimitFar = 100;//超音波センサの閾値
 int usLimitNear = 80;
 //===========================================超音波センサここまで================
 
@@ -160,13 +162,15 @@ void setup() {
 //}
 
 void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
-  //  mode = 3;
+  //mode = 3;
   //  tsDirection = 1;
   if (mode == 1) { //=======================================mode1===============
     sp1 = random(10, 30);
+    pos2 = 90;
     pos3 = 90;
+    pos4 = 90;
     if (time % 30 <= 5) {
-      if (timePrev - time >= 50) {
+      if (randomPrev - time >= 50) {
         if (pos6 >= 90) {
           pos6 = random(0, 60);
         } else {
@@ -179,7 +183,7 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
           pos6 = random(0, 30);
           pos1 = random(0, 90);
         }
-        timePrev = time;
+        randomPrev = time;
       }
       pos5 = random(0, 20);
     }
@@ -246,15 +250,15 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
       pos2 = 130;
       pos3 = 60;
       pos4 = 70;
-      if (time % 50 <= 10 && timePrev - time >= 70) {
+      if (time % 50 <= 10 && randomPrev - time >= 70) {
         pos5 = random(70, 90);
         // pos6 = random(0, 180);
-        timePrev = time;
+        randomPrev = time;
       }
-      if (time % 30 <= 10 && timePrev - time >= 70) {
+      if (time % 30 <= 10 && randomPrev - time >= 70) {
         //  pos5 = random(70, 90);
         pos6 = random(0, 180);
-        timePrev = time;
+        randomPrev = time;
       }
     } else if (tsDirection == 2) {//東
 
@@ -262,15 +266,15 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
       pos2 = 60;
       pos3 = 130;
       pos4 = 130;
-      if (time % 50 <= 10 && timePrev - time >= 70) {
+      if (time % 50 <= 10 && randomPrev - time >= 70) {
         pos5 = random(70, 90);
         // pos6 = random(0, 180);
-        timePrev = time;
+        randomPrev = time;
       }
-      if (time % 30 <= 10 && timePrev - time >= 70) {
+      if (time % 30 <= 10 && randomPrev - time >= 70) {
         //  pos5 = random(70, 90);
         pos6 = random(0, 180);
-        timePrev = time;
+        randomPrev = time;
       }
     } else if (tsDirection == 4) {//西
 
@@ -286,13 +290,13 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
 
 
   } else if (mode == 4) {//=======================================mode4===丸まる============
-    sp1 = sp2 = sp3 = sp4 = sp5 = sp6 = 20;
-    pos2 = 130;
-    pos3 = 10;
-    pos4 = 10;
-    pos5 = 10;
+    sp1 = sp2 = sp3 = sp4 = sp5 = sp6 = 30;
+    pos2 = 30;
+    pos3 = 170;
+    pos4 = 170;
+    pos5 = 170;
     pos6 = 90;
-    touchPoint++;
+    maruPoint++;
   }
   //=======================================動きアルゴリズム================
   //  v = t * PI / 180;
@@ -318,49 +322,52 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
 }//movement
 
 void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
-  if ((mode == 4) && (touchPoint <= 200)) {//一定時間丸まり続ける
+  if ((mode == 4) && (maruPoint <= 30)) {//一定時間丸まり続ける
     mode = 4;
-  } else if (mode == 4 && touchPoint >= 200) {//一定時間丸まったら、元に戻る、リセット
+  } else if (mode == 4 && maruPoint >= 30) {//一定時間丸まったら、元に戻る、リセット
     mode = 1;
+    maruPoint = 0;
     touchPoint = 0;
-  } else  if (mode == 3 && touchPoint <= 100) {//タッチされたら
-    mode = 3;
+  } else  if (mode == 3 && touchPoint <= 5) {//タッチされたら
+    if (time - touchTimer <= 3000) {
+      mode = 3;
+    } else {
+      mode = 1;
+    }
     if (tsNumber >= 1) {
       touchPoint++;
     }
-  } else if (mode == 3 && touchPoint >= 101) {
+  } else if (mode == 3 && touchPoint >= 6) {
     mode = 4;
   } else if (usNumber >= 3) { //二箇所以上から近寄られたら丸まる
     mode = 4;
   } else if (tsNumber >= 1) {//タッチセンサが1つでも反応していたら
-    if (tsNumber >= 3) {//3つ以上反応していたら
-      mode = 4;
-    } else {
-      mode = 3;
-      if (ts1) {//タッチセンサ1が反応している
-        if (ts2) {
-          tsDirection = 5;//1&2→北東
-        } else if (ts4) {
-          tsDirection = 8;//1&4→北西
-        } else {
-          tsDirection = 1;//1のみ
-        }
-      } else if (ts2) {
-        if (ts3) {
-          tsDirection = 6;//2&3→南東
-        } else {
-          tsDirection = 2;//2のみ
-        }
-      } else if (ts3) {
-        if (ts4) {
-          tsDirection = 7;//3&4→南西
-        } else {
-          tsDirection = 3;//3のみ
-        }
+    mode = 3;
+    touchTimer = millis();
+    if (ts1) {//タッチセンサ1が反応している
+      if (ts2) {
+        tsDirection = 5;//1&2→北東
       } else if (ts4) {
-        tsDirection = 4;//4のみ
+        tsDirection = 8;//1&4→北西
+      } else {
+        tsDirection = 1;//1のみ
       }
+    } else if (ts2) {
+      if (ts3) {
+        tsDirection = 6;//2&3→南東
+      } else {
+        tsDirection = 2;//2のみ
+      }
+    } else if (ts3) {
+      if (ts4) {
+        tsDirection = 7;//3&4→南西
+      } else {
+        tsDirection = 3;//3のみ
+      }
+    } else if (ts4) {
+      tsDirection = 4;//4のみ
     }
+
   } else if (usNumber == 1) {//タッチセンサは反応していなくて、超音波が一つだけ反応している
     mode = 2;
   } else if (usNumber == 0 && tsNumber == 0) { //タッチセンサも超音波センサも反応していない
@@ -555,23 +562,21 @@ void loop() { //=======================================loop=====================
   //  Serial.print("\t");
   //  Serial.print(tsNumber);
   // Serial.print("\t");
-  Serial.print("touch_value:");
-  Serial.print(tsVal1);
   Serial.print("\t mode: \t");
   Serial.print(mode);
   Serial.print("\t P:\t");
   Serial.print(touchPoint);
-  Serial.print("\n");
+  Serial.print("\t");
   //タッチ
-  //  Serial.print("touch_value:");
-  //  Serial.print(tsVal1);
-  //  Serial.print(" \t");
-  //  Serial.print(tsVal2);
-  //  Serial.print(" \t");
-  //  Serial.print(tsVal3);
-  //  Serial.print(" \t");
-  //  Serial.print(tsVal4);
-  //  Serial.print(" \n");
+  Serial.print("touch_value:");
+  Serial.print(tsVal1);
+  Serial.print(" \t");
+  Serial.print(tsVal2);
+  Serial.print(" \t");
+  Serial.print(tsVal3);
+  Serial.print(" \t");
+  Serial.print(tsVal4);
+  Serial.print(" \n");
   //===========================================シリアルプリントここまで================
 
   modeCheck();
