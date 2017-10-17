@@ -1,6 +1,6 @@
 #include "Flexa.h"
 #include <CapacitiveSensor.h>
-#include <VarSpeedServo.h>
+#include "VarSpeedServo.h"
 
 //=======================================mode================
 int mode = 1;// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
@@ -105,8 +105,8 @@ int sp6 = 20;
 //===========================================動きここまで================
 
 void setup() {
-  Braccio.begin();
-  Serial.begin(9600);
+  FLEXA.begin();
+  //  Serial.begin(9600);
   //=======================================タッチセンサ================
   //キャリブレーションするための時間とかそういうのだと思います。
   cs1.set_CS_AutocaL_Millis(0xFFFFFFFF);
@@ -167,8 +167,8 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
     pos2 = 90;
     pos3 = 90;
     pos4 = 90;
-    if (time % 30 <= 5) {
-      if (randomPrev - time >= 50) {
+    if (time % 30 <= 12) {
+      if (randomPrev - time >= 40) {
         if (pos6 >= 90) {
           pos6 = random(0, 60);
         } else {
@@ -191,54 +191,53 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
     sp5 = 60;
     int hoge = 170;
     pos2 = pos3 = pos4 = 90;
-      //60度づつずらす！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-    if (us1 >= 1) {
+    if (us6 >= 1) {
       pos1 = 0;
       pos5 = 0;
-      if (us1 == 2) {//近い
+      if (us6 == 2) {//近い
         pos3 = hoge - Distance1;
       } else {//遠い
         pos3 = 90;
       }
-    } else if (us2 >= 1) {
+    } else if (us1 >= 1) {
       pos1 = 120;
       pos5 = 180;
-      if (us2 == 2) {
+      if (us1 == 2) {
         pos3 =  180 - hoge + Distance2;
       } else {
         pos3 = 90;
       }
-    } else if (us3 >= 1) {
+    } else if (us2 >= 1) {
       pos1 = 60;
       pos5 = 180;
-      if (us3 == 2) {//近い
+      if (us2 == 2) {//近い
         pos3 = 180 + Distance3 - hoge;
         pos4 = hoge - Distance3;
       } else {//遠い
         pos3 = 90;
       }
-    } else if (us4 >= 1) {
+    } else if (us3 >= 1) {
       pos1 = 180;
       pos5 = 0;
-      if (us4 == 2) {
+      if (us3 == 2) {
         pos3 = 180 - (hoge - Distance4);
         pos4 = hoge - Distance4;
       } else {
         pos3 = 90;
       }
-    } else if (us5 >= 1) {
+    } else if (us4 >= 1) {
       pos1 = 120;
       pos5 = 0;
-      if (us5 == 2) {
+      if (us4 == 2) {
         pos3 = 180 - (hoge - Distance5);
         pos4 = hoge - Distance5;
       } else {
         pos3 = 90;
       }
-    } else if (us6 >= 1) {
+    } else if (us5 >= 1) {
       pos1 = 60;
       pos5 = 0;
-      if (us6 == 2) {
+      if (us5 == 2) {
         pos3 = 180 - (hoge - Distance6);
         pos4 = hoge - Distance6;
       } else {
@@ -264,7 +263,19 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
         randomPrev = time;
       }
     } else if (tsDirection == 2) {//東
-
+      pos2 = 130;
+      pos3 = 60;
+      pos4 = 70;
+      if (time % 50 <= 10 && randomPrev - time >= 70) {
+        pos5 = random(70, 90);
+        // pos6 = random(0, 180);
+        randomPrev = time;
+      }
+      if (time % 30 <= 10 && randomPrev - time >= 70) {
+        //  pos5 = random(70, 90);
+        pos6 = random(0, 180);
+        randomPrev = time;
+      }
     } else if (tsDirection == 3) {//南・せなか
       pos2 = 60;
       pos3 = 130;
@@ -280,7 +291,19 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
         randomPrev = time;
       }
     } else if (tsDirection == 4) {//西
-
+      pos2 = 130;
+      pos3 = 60;
+      pos4 = 70;
+      if (time % 50 <= 10 && randomPrev - time >= 70) {
+        pos5 = random(70, 90);
+        // pos6 = random(0, 180);
+        randomPrev = time;
+      }
+      if (time % 30 <= 10 && randomPrev - time >= 70) {
+        //  pos5 = random(70, 90);
+        pos6 = random(0, 180);
+        randomPrev = time;
+      }
     } else if (tsDirection == 5) {//北東
 
     } else if (tsDirection == 6) {//東南
@@ -325,13 +348,13 @@ void movement() {// mode1:通常　mode2:接近感知　mode3:接触感知　mod
 }//movement
 
 void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
-  if ((mode == 4) && (maruPoint <= 30)) {//一定時間丸まり続ける
+  if ((mode == 4) && (maruPoint <= 15)) {//一定時間丸まり続ける
     mode = 4;
-  } else if (mode == 4 && maruPoint >= 30) {//一定時間丸まったら、元に戻る、リセット
+  } else if (mode == 4 && maruPoint >= 15) {//一定時間丸まったら、元に戻る、リセット
     mode = 1;
     maruPoint = 0;
     touchPoint = 0;
-  } else  if (mode == 3 && touchPoint <= 5) {//タッチされたら
+  } else  if (mode == 3 && touchPoint <= 30) {//タッチされたら
     if (time - touchTimer <= 3000) {
       mode = 3;
     } else {
@@ -340,7 +363,7 @@ void modeCheck() { // mode1:通常　mode2:接近感知　mode3:接触感知　m
     if (tsNumber >= 1) {
       touchPoint++;
     }
-  } else if (mode == 3 && touchPoint >= 6) {
+  } else if (mode == 3 && touchPoint >= 30) {
     mode = 4;
   } else if (usNumber >= 3) { //二箇所以上から近寄られたら丸まる
     mode = 4;
@@ -393,6 +416,7 @@ void loop() { //=======================================loop=====================
     Duration1 = Duration1 / 2; //往復距離を半分にする
     Distance1 = Duration1 * 340 * 100 / 1000000; // 音速を340m/sに設定
   }
+  Distance1 = 150;
 
   //sensor2
   digitalWrite(trigPin2, LOW);
@@ -405,7 +429,7 @@ void loop() { //=======================================loop=====================
     Duration2 = Duration2 / 2; //往復距離を半分にする
     Distance2 = Duration2 * 340 * 100 / 1000000; // 音速を340m/sに設定
   }
-
+  Distance2 = 150;
   //sensor3
   digitalWrite(trigPin3, LOW);
   delayMicroseconds(2);
@@ -565,21 +589,27 @@ void loop() { //=======================================loop=====================
   //  Serial.print("\t");
   //  Serial.print(tsNumber);
   // Serial.print("\t");
-  Serial.print("\t mode: \t");
-  Serial.print(mode);
-  Serial.print("\t P:\t");
-  Serial.print(touchPoint);
-  Serial.print("\t");
+  //  Serial.print("\t mode: \t");
+  //  Serial.print(mode);
+  //  Serial.print("\t P:\t");
+  //  Serial.print(touchPoint);
+  //  Serial.print("\t");
+  //  Serial.print(maruPoint);
+  //  Serial.print("\t");
+  //  Serial.print(tsNumber);
+  //  Serial.print("\t");
+  //  Serial.print(usNumber);
+  //   Serial.print("\t");
   //タッチ
-  Serial.print("touch_value:");
-  Serial.print(tsVal1);
-  Serial.print(" \t");
-  Serial.print(tsVal2);
-  Serial.print(" \t");
-  Serial.print(tsVal3);
-  Serial.print(" \t");
-  Serial.print(tsVal4);
-  Serial.print(" \n");
+  //  Serial.print("touch_value:");
+  //  Serial.print(tsVal1);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal2);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal3);
+  //  Serial.print(" \t");
+  //  Serial.print(tsVal4);
+  //  Serial.print(" \n");
   //===========================================シリアルプリントここまで================
 
   modeCheck();

@@ -14,27 +14,27 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "Flexa.h"
-#include <VarSpeedServo.h>
+#include "FLEXA.h"
+//#include "VarSpeedServo.h"
 
-extern VarSpeedServo base;
-extern VarSpeedServo shoulder;
-extern VarSpeedServo elbow;
-extern VarSpeedServo wrist_rot;
-extern VarSpeedServo wrist_ver;
-extern VarSpeedServo gripper;
+//extern VarSpeedServo base;
+//extern VarSpeedServo shoulder;
+//extern VarSpeedServo elbow;
+//extern VarSpeedServo wrist_rot;
+//extern VarSpeedServo wrist_ver;
+//extern VarSpeedServo gripper;
+//
+//extern int step_base = 90;
+//extern int step_shoulder = 95;
+//extern int step_elbow = 82;
+//extern int step_wrist_rot = 83;
+//extern int step_wrist_ver = 85;
+//extern int step_gripper = 0;
 
-extern int step_base = 90;
-extern int step_shoulder = 95;
-extern int step_elbow = 82;
-extern int step_wrist_rot = 83;
-extern int step_wrist_ver = 85;
-extern int step_gripper = 0;
-
-_Braccio Braccio;
+_FLEXA FLEXA;
 
 //Initialize Braccio object
-_Braccio::_Braccio() {
+_FLEXA::_FLEXA() {
 }
 
 /**
@@ -45,35 +45,35 @@ _Braccio::_Braccio() {
    You should set begin(SOFT_START_DISABLED) if you are using the Arm Robot shield V1.6
    SOFT_START_DISABLED disable the Braccio movements
 */
-unsigned int _Braccio::begin(int soft_start_level) {
+unsigned int _FLEXA::begin(int soft_start_level) {
   //Calling Braccio.begin(SOFT_START_DISABLED) the Softstart is disabled and you can use the pin 12
   if (soft_start_level != SOFT_START_DISABLED) {
     pinMode(SOFT_START_CONTROL_PIN, OUTPUT);
     digitalWrite(SOFT_START_CONTROL_PIN, LOW);
   }
 
-  // initialization pin Servo motors サーボモータのピンを定義
-  base.attach(11);
-  shoulder.attach(10);
-  elbow.attach(9);
-  wrist_rot.attach(6);
-  wrist_ver.attach(5);
-  gripper.attach(3);
-
-  //For each step motor this set up the initial degree モータの初期角度を設定
-  base.write(90);
-  shoulder.write(95);
-  elbow.write(82);
-  wrist_ver.write(83);
-  wrist_rot.write(85);
-  gripper.write(0);
-  //Previous step motor position
-  step_base = 90;
-  step_shoulder = 95;
-  step_elbow = 82;
-  step_wrist_ver = 83;
-  step_wrist_rot = 85;
-  step_gripper = 0;
+//  // initialization pin Servo motors サーボモータのピンを定義
+//  base.attach(11);
+//  shoulder.attach(10);
+//  elbow.attach(9);
+//  wrist_rot.attach(6);
+//  wrist_ver.attach(5);
+//  gripper.attach(3);
+//
+//  //For each step motor this set up the initial degree モータの初期角度を設定
+//  base.write(90);
+//  shoulder.write(95);
+//  elbow.write(82);
+//  wrist_ver.write(83);
+//  wrist_rot.write(85);
+//  gripper.write(0);
+//  //Previous step motor position
+//  step_base = 90;
+//  step_shoulder = 95;
+//  step_elbow = 82;
+//  step_wrist_ver = 83;
+//  step_wrist_rot = 85;
+//  step_gripper = 0;
 
   if (soft_start_level != SOFT_START_DISABLED)
     _softStart(soft_start_level);
@@ -85,7 +85,7 @@ unsigned int _Braccio::begin(int soft_start_level) {
   @param high_time: the time in the logic level high
   @param low_time: the time in the logic level low
 */
-void _Braccio::_softwarePWM(int high_time, int low_time) {
+void _FLEXA::_softwarePWM(int high_time, int low_time) {
   digitalWrite(SOFT_START_CONTROL_PIN, HIGH);
   delayMicroseconds(high_time);
   digitalWrite(SOFT_START_CONTROL_PIN, LOW);
@@ -98,7 +98,7 @@ void _Braccio::_softwarePWM(int high_time, int low_time) {
   The SOFT_START_CONTROL_PIN is used as a software PWM
   @param soft_start_level: the minimum value is -70, default value is 0 (SOFT_START_DEFAULT)
 */
-void _Braccio::_softStart(int soft_start_level) {
+void _FLEXA::_softStart(int soft_start_level) {
   long int tmp = millis();
   while (millis() - tmp < LOW_LIMIT_TIMEOUT)
     _softwarePWM(80 + soft_start_level, 450 - soft_start_level); //the sum should be 530usec
@@ -108,153 +108,3 @@ void _Braccio::_softStart(int soft_start_level) {
 
   digitalWrite(SOFT_START_CONTROL_PIN, HIGH);
 }
-
-/**
-   This functions allow you to control all the servo motors
-
-   @param stepDelay The delay between each servo movement
-   @param vBase next base servo motor degree
-   @param vShoulder next shoulder servo motor degree
-   @param vElbow next elbow servo motor degree
-   @param vWrist_ver next wrist rotation servo motor degree
-   @param vWrist_rot next wrist vertical servo motor degree
-   @param vgripper next gripper servo motor degree
-*/
-/*
-  int _Braccio::ServoMovement(int stepDelay, int vBase, int vShoulder, int vElbow, int vWrist_ver, int vWrist_rot, int vgripper) {
-
-  // Check values, to avoid dangerous positions for the Braccio
-  //危険な位置を避けるために値をチェックする！
-
-  //stepdelayについて
-  if (stepDelay > 30) stepDelay = 30;
-  if (stepDelay < 10) stepDelay = 10;
-  //M1について
-  if (vBase < 0) vBase = 0;
-  if (vBase > 180) vBase = 180;
-  //M2について
-  if (vShoulder < 15) vShoulder = 15;
-  if (vShoulder > 165) vShoulder = 165;
-  //M3について
-  if (vElbow < 0) vElbow = 0;
-  if (vElbow > 180) vElbow = 180;
-  //M4について
-  if (vWrist_ver < 0) vWrist_ver = 0;
-  if (vWrist_ver > 180) vWrist_ver = 180;
-  //M5について
-  if (vWrist_rot > 180) vWrist_rot = 180;
-  if (vWrist_rot < 0) vWrist_rot = 0;
-  //M6について
-  // if (vgripper < 0) vgripper = 0;
-  // if (vgripper > 180) vgripper = 180;
-
-  int exit = 1;
-
-  //Until the all motors are in the desired position すべてのモータが望んだ位置になるまで
-  while (exit)
-  {
-    //For each servo motor if next degree is not the same of the previuos than do the movement
-    //すべてのモータについて、次の角度が前の角度と違ったら→その値へ変化
-    //M1について
-    if (vBase != step_base)
-    {
-      base.write(step_base);
-      //One step ahead
-      if (vBase > step_base) {
-        step_base++;
-      }
-      //One step beyond
-      if (vBase < step_base) {
-        step_base--;
-      }
-    }
-    //M2について
-    if (vShoulder != step_shoulder)
-    {
-      shoulder.write(step_shoulder);
-      //One step ahead
-      if (vShoulder > step_shoulder) {
-        step_shoulder++;
-      }
-      //One step beyond
-      if (vShoulder < step_shoulder) {
-        step_shoulder--;
-      }
-
-    }
-    //M3について
-    if (vElbow != step_elbow)
-    {
-      elbow.write(step_elbow);
-      //One step ahead
-      if (vElbow > step_elbow) {
-        step_elbow++;
-      }
-      //One step beyond
-      if (vElbow < step_elbow) {
-        step_elbow--;
-      }
-
-    }
-    //M4について
-    if (vWrist_ver != step_wrist_rot)
-    {
-      wrist_rot.write(step_wrist_rot);
-      //One step ahead
-      if (vWrist_ver > step_wrist_rot) {
-        step_wrist_rot++;
-      }
-      //One step beyond
-      if (vWrist_ver < step_wrist_rot) {
-        step_wrist_rot--;
-      }
-
-    }
-    //M5について
-    if (vWrist_rot != step_wrist_ver)
-    {
-      wrist_ver.write(step_wrist_ver);
-      //One step ahead
-      if (vWrist_rot > step_wrist_ver) {
-        step_wrist_ver++;
-      }
-      //One step beyond
-      if (vWrist_rot < step_wrist_ver) {
-        step_wrist_ver--;
-      }
-    }
-    //M6について
-    /*
-    if (vgripper != step_gripper)
-    {
-      gripper.write(step_gripper);
-      if (vgripper > step_gripper) {
-        step_gripper++;
-      }
-      //One step beyond
-      if (vgripper < step_gripper) {
-        step_gripper--;
-      }
-    }
-
-    //delay between each movement //各動作間の遅延
-    delay(stepDelay);
-
-    //It checks if all the servo motors are in the desired position　すべてのモータの位置が望んだ位置にあるかをチェック
-    if ((vBase == step_base) && (vShoulder == step_shoulder)
-        && (vElbow == step_elbow) && (vWrist_ver == step_wrist_rot)
-        && (vWrist_rot == step_wrist_ver)
-        //&& (vgripper == step_gripper))
-        {
-      step_base = vBase;
-      step_shoulder = vShoulder;
-      step_elbow = vElbow;
-      step_wrist_rot = vWrist_ver;
-      step_wrist_ver = vWrist_rot;
-     // step_gripper = vgripper;
-      exit = 0;
-    } else {
-      exit = 1;
-    }
-  }
-  }*/

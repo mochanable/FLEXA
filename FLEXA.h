@@ -14,12 +14,12 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef BRACCIO_H_
-#define BRACCIO_H_
+#ifndef FLEXA_H_
+#define FLEXA_H_
 
 #include <Arduino.h>
 //#include <Servo.h>
-#include <VarSpeedServo.h>
+//#include "VarSpeedServo.h"
 
 // You should set begin(SOFT_START_DISABLED) if you are using the Arm Robot shield V1.6
 #define SOFT_START_DISABLED    -999
@@ -35,10 +35,10 @@
 #define LOW_LIMIT_TIMEOUT 2000
 #define HIGH_LIMIT_TIMEOUT 6000
 
-class _Braccio {
+class _FLEXA {
 
 public:
-  _Braccio();
+  _FLEXA();
     
   /**
   * Braccio initializations and set intial position
@@ -52,7 +52,7 @@ public:
   /**
    * This function allow the user to control all the servo motors in the Braccio
    */
-  int ServoMovement(int delay, int Vbase,int Vshoulder, int Velbow, int Vwrist_ver, int Vwrist_rot, int Vgripper); 
+ // int ServoMovement(int delay, int Vbase,int Vshoulder, int Velbow, int Vwrist_ver, int Vwrist_rot, int Vgripper); 
   
 
 private:
@@ -74,6 +74,6 @@ private:
 
 };
 
-extern _Braccio Braccio;
+extern _FLEXA FLEXA;
 
-#endif // BRACCIO_H_
+#endif // FLEXA_H_
