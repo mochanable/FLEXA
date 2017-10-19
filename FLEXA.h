@@ -14,12 +14,12 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef FLEXA_H_
-#define FLEXA_H_
+#ifndef FLEXA_h
+#define FLEXA_h
 
 #include <Arduino.h>
 //#include <Servo.h>
-//#include "VarSpeedServo.h"
+#include "VarSpeedServo.h"
 
 // You should set begin(SOFT_START_DISABLED) if you are using the Arm Robot shield V1.6
 #define SOFT_START_DISABLED    -999
@@ -37,39 +37,41 @@
 
 class _FLEXA {
 
-public:
-  _FLEXA();
-    
-  /**
-  * Braccio initializations and set intial position
-  * Modifing this function you can set up the initial position of all the
-  * servo motors of Braccio 
-  *@param soft_start_level: the minimum value is -70, default value is 0 (SOFT_START_DEFAULT)
-  * You should set begin(SOFT_START_DISABLED) if you are using the Arm Robot shield V1.6
-  */
-  unsigned int begin(int soft_start_level=SOFT_START_DEFAULT); 
+  public:
+    _FLEXA();
 
-  /**
-   * This function allow the user to control all the servo motors in the Braccio
-   */
- // int ServoMovement(int delay, int Vbase,int Vshoulder, int Velbow, int Vwrist_ver, int Vwrist_rot, int Vgripper); 
-  
+    /**
+      Braccio initializations and set intial position
+      Modifing this function you can set up the initial position of all the
+      servo motors of Braccio
+      @param soft_start_level: the minimum value is -70, default value is 0 (SOFT_START_DEFAULT)
+      You should set begin(SOFT_START_DISABLED) if you are using the Arm Robot shield V1.6
+    */
+    unsigned int begin(int soft_start_level = SOFT_START_DEFAULT);
+    void modeCheck();
+    void movement();
+    void serial();
+    /**
+       This function allow the user to control all the servo motors in the Braccio
+    */
+    // int ServoMovement(int delay, int Vbase,int Vshoulder, int Velbow, int Vwrist_ver, int Vwrist_rot, int Vgripper);
 
-private:
-  /*
-  * This function, used only with the Braccio Shield V4 and greater,
-  * turn ON the Braccio softly and save Braccio from brokes.
-  * The SOFT_START_CONTROL_PIN is used as a software PWM
-  * @param soft_start_level: the minimum value is -70, , default value is 0 (SOFT_START_DEFAULT)
-  */
-  void _softStart(int soft_start_level);
-  
-  /*
-  * Software implementation of the PWM for the SOFT_START_CONTROL_PIN,HIGH
-  * @param high_time: the time in the logic level high
-  * @param low_time: the time in the logic level low
-  */
-  void _softwarePWM(int high_time, int low_time);
+
+  private:
+    /*
+      This function, used only with the Braccio Shield V4 and greater,
+      turn ON the Braccio softly and save Braccio from brokes.
+      The SOFT_START_CONTROL_PIN is used as a software PWM
+      @param soft_start_level: the minimum value is -70, , default value is 0 (SOFT_START_DEFAULT)
+    */
+    void _softStart(int soft_start_level);
+
+    /*
+      Software implementation of the PWM for the SOFT_START_CONTROL_PIN,HIGH
+      @param high_time: the time in the logic level high
+      @param low_time: the time in the logic level low
+    */
+    void _softwarePWM(int high_time, int low_time);
 
 
 };
