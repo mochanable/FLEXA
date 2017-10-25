@@ -2,6 +2,9 @@
 #include "FLEXA.h"
 #include "VarSpeedServo.h"
 
+int maruPointLimit = 20;
+int touchPointLimit = 30;
+
 //=======================================mode================
 int mode = 1;// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
 extern int usNumber; // 反応している超音波センサの数
@@ -10,15 +13,16 @@ int tsDirection;  // 1:北　2:東　3:南　4:西　5:北東　6:東南　7:南
 unsigned long time;
 unsigned long randomPrev;//最後にランダムを使った時刻
 unsigned long touchTimer;//一定時間タッチしてないともとに戻る
+unsigned long sonicTimer;
 int touchPoint = 0; //タッチし続けると貯まるポイント
 int maruPoint = 0;//丸まり続けたら元に戻る
 //===========================================modeここまで================
 
 //=======================================タッチセンサ================
-//CapacitiveSensor cs1 = CapacitiveSensor(52, 53);
-//CapacitiveSensor cs2 = CapacitiveSensor(38, 39);
-//CapacitiveSensor cs3 = CapacitiveSensor(40, 41);
-//CapacitiveSensor cs4 = CapacitiveSensor(42, 43);
+//CapacitiveSensor cs1 = CapacitiveSensor(40, 41);
+//CapacitiveSensor cs2 = CapacitiveSensor(44, 45);
+//CapacitiveSensor cs3 = CapacitiveSensor(48, 49);
+//CapacitiveSensor cs4 = CapacitiveSensor(52, 53);
 extern long tsVal1;//タッチセンサ1の値
 extern long tsVal2;
 extern long tsVal3;
@@ -120,12 +124,12 @@ unsigned int _FLEXA::begin(int soft_start_level) {
   motor5.attach(5);
   motor6.attach(3);
   //初期動作
-  motor1.write(90);
-  motor2.write(95);
-  motor3.write(82);
-  motor4.write(83);
-  motor5.write(85);
-  motor6.write(90);
+  //  motor1.write(90);
+  //  motor2.write(95);
+  //  motor3.write(82);
+  //  motor4.write(83);
+  //  motor5.write(85);
+  //  motor6.write(90);
   //===========================================braccioここまで================
 
   if (soft_start_level != SOFT_START_DISABLED)
@@ -165,26 +169,50 @@ void _FLEXA::_softStart(int soft_start_level) {
 void _FLEXA::modeCheck() {//=======================================modeCheck==============================================================================================================================
   time = millis();
   // mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
-  int maruPointLimit = 20;
-  int touchPointLimit = 30;
   if ((mode == 4) && (maruPoint <= maruPointLimit)) {//一定時間丸まり続ける
     mode = 4;
   } else if (mode == 4 && maruPoint >= maruPointLimit) {//一定時間丸まったら、元に戻る、リセット
     mode = 1;
     maruPoint = 0;
     touchPoint = 0;
-  } else  if (mode == 3 && touchPoint <= touchPointLimit) {//タッチされたら
-    if (time - touchTimer <= 3000) {
+  } else  if (mode == 3 && touchPoint <= touchPointLimit) {
+    if (time - touchTimer <= 3000) {//タッチされたあと一定時間
       mode = 3;
+      if (ts1) {//タッチセンサ1が反応している
+        if (ts2) {
+          tsDirection = 5;//1&2→北東
+        } else if (ts4) {
+          tsDirection = 8;//1&4→北西
+        } else {
+          tsDirection = 1;//1のみ
+        }
+      } else if (ts2) {
+        if (ts3) {
+          tsDirection = 6;//2&3→南東
+        }
+        else {
+          tsDirection = 2;//2のみ
+        }
+      } else if (ts3) {
+        if (ts4) {
+          tsDirection = 7;//3&4→南西
+        } else {
+          tsDirection = 3;//3のみ
+        }
+      } else if (ts4) {
+        tsDirection = 4;//4のみ
+      } else {
+        tsDirection = 0;
+      }
     } else {
       mode = 1;
     }
     if (tsNumber >= 1) {
       touchPoint++;
     }
-  } else if (mode == 3 && touchPoint >= touchPointLimit) {
-    mode = 4;
-  } else if (usNumber >= 2) { //二箇所以上から近寄られたら丸まる
+  } else if (mode == 3 && touchPoint >= touchPointLimit) {//触り過ぎたら
+    mode = 4;//4
+  } else if (usNumber >= 4) { //二箇所以上から近寄られたら丸まる
     mode = 4;
   } else if (tsNumber >= 1) {//タッチセンサが1つでも反応していたら
     mode = 3;
@@ -200,7 +228,8 @@ void _FLEXA::modeCheck() {//=======================================modeCheck====
     } else if (ts2) {
       if (ts3) {
         tsDirection = 6;//2&3→南東
-      } else {
+      }
+      else {
         tsDirection = 2;//2のみ
       }
     } else if (ts3) {
@@ -211,11 +240,17 @@ void _FLEXA::modeCheck() {//=======================================modeCheck====
       }
     } else if (ts4) {
       tsDirection = 4;//4のみ
+    } else {
+      tsDirection = 0;
     }
 
   } else if (usNumber == 1) {//タッチセンサは反応していなくて、超音波が一つだけ反応している
     mode = 2;
+    sonicTimer = 2;
   } else if (usNumber == 0 && tsNumber == 0) { //タッチセンサも超音波センサも反応していない
+    if (time - sonicTimer <= 3000) {//タッチされたあと一定時間
+      mode = 2;
+    }
     mode = 1;
   }
 }
@@ -231,31 +266,32 @@ void _FLEXA::movement() {//=======================================movement======
     pos3 = 90;
     pos4 = 90;
     if (time % 30 <= 12) {
-      if (randomPrev - time >= 20) {
+      if (time - randomPrev >= 500) {
         if (pos6 >= 90) {
-          pos6 = random(0, 60);
+          pos6 = random(0, 30);
         } else {
-          pos6 = random(120, 180);
+          pos6 = random(150, 180);
         }
         if (pos1 >= 90) {
-          pos1 = random(90, 180);
+          pos1 = random(0, 30);
         } else {
-          pos1 = random(0, 90);
+          pos1 = random(150, 180);
         }
+        pos5 = random(0, 60);
         randomPrev = time;
       }
-      pos5 = random(0, 20);
     }
   } else if (mode == 2) {  //=======================================mode2===============
     sp1 = 40;
     sp2 = sp3 = sp4 = sp6 = 20;
     sp5 = 40;
     pos2 = pos3 = pos4 = 90;
+    int hoge = 80;
     if (us6 >= 1) {
       pos1 = 0;
       pos5 = 0;
       if (us6 == 2) {//近い
-        pos3 = 90 + usLimitNear - Distance6;
+        pos3 = hoge + usLimitNear - Distance6;
         pos4 = -pos3 + 180;
       } else {//遠い
         pos3 = 90;
@@ -265,7 +301,7 @@ void _FLEXA::movement() {//=======================================movement======
       pos1 = 120;
       pos5 = 180;
       if (us1 == 2) {
-        pos3 =  90 - usLimitNear + Distance1;
+        pos3 =  hoge - usLimitNear + Distance1;
         pos4 = -pos3 + 180;
       } else {
         pos3 = 90;
@@ -275,7 +311,7 @@ void _FLEXA::movement() {//=======================================movement======
       pos1 = 60;
       pos5 = 180;
       if (us2 == 2) {//近い
-        pos3 = 90 - usLimitNear + Distance2;
+        pos3 = hoge - usLimitNear + Distance2;
         pos4 = -pos3 + 180;
       } else {//遠い
         pos3 = 90;
@@ -285,7 +321,7 @@ void _FLEXA::movement() {//=======================================movement======
       pos1 = 180;
       pos5 = 0;
       if (us3 == 2) {
-        pos3 = 90 + usLimitNear - Distance3;
+        pos3 = hoge + usLimitNear - Distance3;
         pos4 = -pos3 + 180;
       } else {
         pos3 = 90;
@@ -295,7 +331,7 @@ void _FLEXA::movement() {//=======================================movement======
       pos1 = 120;
       pos5 = 0;
       if (us4 == 2) {
-        pos3 = 90 + usLimitNear - Distance4;
+        pos3 = hoge + usLimitNear - Distance4;
         pos4 = -pos3 + 180;
       } else {
         pos3 = 90;
@@ -305,35 +341,86 @@ void _FLEXA::movement() {//=======================================movement======
       pos1 = 60;
       pos5 = 0;
       if (us5 == 2) {
-        pos3 = 90 + usLimitNear - Distance5;
+        pos3 = hoge + usLimitNear - Distance5;
         pos4 = -pos3 + 180;
       } else {
         pos3 = 90;
         pos4 = 90;
       }
     } else {
-      //error
+      //そのまま
     }
   } else if (mode == 3) {// //==================mode3===============接触　1:北　2:東　3:南　4:西　5:北東　6:東南　7:南西　8:北西
-    sp1 = sp2 = sp3 = sp4 = sp5 = sp6 = 20;
+    sp2 = sp3 = sp4 = sp5 = sp6 = 20;
+    sp1 = 40;
+    int fuga = 60;//触られて動く値
     if (tsDirection == 1) {//北・おなか
     } else if (tsDirection == 2) {//東
+      if (pos1 <= 180 - fuga) {
+        pos1 = pos1 - fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 + fuga;
+      } else {
+        pos1 = 0;
+      }
     } else if (tsDirection == 3) {//南・せなか
     } else if (tsDirection == 4) {//西
+      if (pos1 >= fuga) {
+        pos1 = pos1 + fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 - fuga;
+      } else {
+        pos1 = 180;
+      }
     } else if (tsDirection == 5) {//北東
+      if (pos1 <= 180 - fuga) {
+        pos1 = pos1 - fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 + fuga;
+      } else {
+        pos1 = 0;
+      }
     } else if (tsDirection == 6) {//東南
+      if (pos1 <= 180 - fuga) {
+        pos1 = pos1 - fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 + fuga;
+      } else {
+        pos1 = 0;
+      }
     } else if (tsDirection == 7) {//南西
+      if (pos1 >= fuga) {
+        pos1 = pos1 + fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 - fuga;
+      } else {
+        pos1 = 180;
+      }
     } else if (tsDirection == 8) {//北西
+      if (pos1 >= fuga) {
+        pos1 = pos1 + fuga;
+        motor1.slowmove(pos1, sp1);
+        delay(100);
+        pos1 = pos1 - fuga;
+      } else {
+        pos1 = 180;
+      }
     }
     pos2 = 90;
     pos3 = 130;
     pos4 = 70;
-    if (time % 50 <= 10 && randomPrev - time >= 70) {
+    if (time % 30 <= 12 && time - randomPrev >= 300) {
       pos5 = random(70, 90);
-      randomPrev = time;
-    }
-    if (time % 30 <= 10 && randomPrev - time >= 70) {
-      pos6 = random(0, 180);
+      if (pos6 >= 90) {
+        pos6 = random(0, 30);
+      } else {
+        pos6 = random(150, 180);
+      }
       randomPrev = time;
     }
   } else if (mode == 4) {//=======================================mode4===丸まる============
@@ -342,17 +429,23 @@ void _FLEXA::movement() {//=======================================movement======
     pos3 = 150;
     pos4 = 150;
     pos5 = 150;
-    if (time % 30 <= 10 && randomPrev - time >= 70) {
+    if (time % 30 <= 10 && randomPrev - time >= 300) {
       if (pos6 >= 90) {
-        pos6 = random(0, 60);
+        pos6 = random(0, 20);
       } else {
-        pos6 = random(120, 180);
+        pos6 = random(160, 180);
+      }
+      if (pos1 >= 90) {
+        pos1 = random(0, 20);
+      } else {
+        pos1 = random(160, 180);
       }
       randomPrev = time;
     }
     maruPoint++;
   }
-   sp1 = sp2 = sp3 = sp4 = sp5 = sp6 = 10;
+  //sp1 = sp2 = sp3 = sp4 = sp5 = sp6 = 10;
+  sp6 = 60;
   motor1.slowmove(pos1, sp1);
   motor2.slowmove(pos2, sp2);
   motor3.slowmove(pos3, sp3);
@@ -365,6 +458,19 @@ void _FLEXA::serial() {
   Serial.print("mode:");
   Serial.print(mode);
   Serial.print("\t");
+
+  //  Serial.print("time:");
+  //  Serial.print(time);
+  //  Serial.print("\t");
+  //
+  //  Serial.print("pos1:");
+  //  Serial.print(pos1);
+  //  Serial.print("\t");
+
+  //  Serial.print("tsDirection:");
+  //  Serial.print(tsDirection);
+  //  Serial.print("\t");
+  //  Serial.print("\t");
   Serial.print("usNumber:");
   Serial.print(usNumber);
   Serial.print("\t");
@@ -380,7 +486,7 @@ void _FLEXA::serial() {
   Serial.print("\t");
   Serial.print(Distance6);
 
-  Serial.print("\t\ttsNumber:");
+  Serial.print("\ttsNumber:");
   Serial.print(tsNumber);
   Serial.print("\tTSVAL:");
   Serial.print(tsVal1);

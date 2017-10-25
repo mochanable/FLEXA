@@ -2,6 +2,14 @@
 #include <CapacitiveSensor.h>
 #include "VarSpeedServo.h"
 
+int usLimitFar = 100;//超音波センサの閾値
+int usLimitNear = 70;
+int tsLimit1 = 300;//タッチセンサの閾値
+int tsLimit2 = 300;
+int tsLimit3 = 300;
+int tsLimit4 = 300;
+
+
 //=======================================mode================
 //int mode = 1;// mode1:通常　mode2:接近感知　mode3:接触感知　mode4:丸まる
 int usNumber = 0; // 反応している超音波センサの数
@@ -15,10 +23,10 @@ int tsNumber = 0; // 反応しているタッチセンサの数
 //===========================================modeここまで================
 
 //=======================================タッチセンサ================
-CapacitiveSensor cs1 = CapacitiveSensor(52, 53);
-CapacitiveSensor cs2 = CapacitiveSensor(38, 39);
-CapacitiveSensor cs3 = CapacitiveSensor(40, 41);
-CapacitiveSensor cs4 = CapacitiveSensor(42, 43);
+CapacitiveSensor cs1 = CapacitiveSensor(40, 41);
+CapacitiveSensor cs2 = CapacitiveSensor(44, 45);
+CapacitiveSensor cs3 = CapacitiveSensor(48, 49);
+CapacitiveSensor cs4 = CapacitiveSensor(52, 53);
 long tsVal1;//タッチセンサ1の値
 long tsVal2;
 long tsVal3;
@@ -27,10 +35,6 @@ boolean ts1 = false; //タッチセンサ1が反応してるか
 boolean ts2 = false;
 boolean ts3 = false;
 boolean ts4 = false;
-int tsLimit1 = 300;//タッチセンサの閾値
-int tsLimit2 = 300;
-int tsLimit3 = 300;
-int tsLimit4 = 300;
 //===========================================タッチセンサここまで================
 
 //=======================================超音波センサ================
@@ -64,8 +68,6 @@ int us3 = 0;
 int us4 = 0;
 int us5 = 0;
 int us6 = 0;
-int usLimitFar = 60;//超音波センサの閾値
-int usLimitNear = 50;
 //===========================================超音波センサここまで================
 
 void setup() {
@@ -110,28 +112,38 @@ void setup() {
 void loop() { //=======================================loop================================================================================================================================
   //=======================================超音波センサ===============
   //sensor1
-  digitalWrite(trigPin1, LOW);
-  delayMicroseconds(2);
-  digitalWrite( trigPin1, HIGH ); //超音波を出力
-  delayMicroseconds( 10 ); //
-  digitalWrite( trigPin1, LOW );
-  Duration1 = pulseIn( echoPin1, HIGH ); //センサからの入力
-  if (Duration1 > 0) {
-    Duration1 = Duration1 / 2; //往復距離を半分にする
-    Distance1 = Duration1 * 340 * 100 / 1000000; // 音速を340m/sに設定
-  }
+  //  digitalWrite(trigPin1, LOW);
+  //  delayMicroseconds(2);
+  //  digitalWrite( trigPin1, HIGH ); //超音波を出力
+  //  delayMicroseconds( 10 ); //
+  //  digitalWrite( trigPin1, LOW );
+  //  Duration1 = pulseIn( echoPin1, HIGH ); //センサからの入力
+  //  if (Duration1 > 0) {
+  //    Duration1 = Duration1 / 2; //往復距離を半分にする
+  //    if (Duration1 * 340 * 100 / 1000000 > 1000) {
+  //      Distance1 = 1000;
+  //    } else {
+  //      Distance1 = Duration1 * 340 * 100 / 1000000; // 音速を340m/sに設定
+  //    }
+  //  }
 
+  Distance1 = 3000;
   //sensor2
-  digitalWrite(trigPin2, LOW);
-  delayMicroseconds(2);
-  digitalWrite( trigPin2, HIGH ); //超音波を出力
-  delayMicroseconds( 10 ); //
-  digitalWrite( trigPin2, LOW );
-  Duration2 = pulseIn( echoPin2, HIGH ); //センサからの入力
-  if (Duration2 > 0) {
-    Duration2 = Duration2 / 2; //往復距離を半分にする
-    Distance2 = Duration2 * 340 * 100 / 1000000; // 音速を340m/sに設定
-  }
+  //  digitalWrite(trigPin2, LOW);
+  //  delayMicroseconds(2);
+  //  digitalWrite( trigPin2, HIGH ); //超音波を出力
+  //  delayMicroseconds( 10 ); //
+  //  digitalWrite( trigPin2, LOW );
+  //  Duration2 = pulseIn( echoPin2, HIGH ); //センサからの入力
+  //  if (Duration2 > 0) {
+  //    Duration2 = Duration2 / 2; //往復距離を半分にする
+  //    if (Duration2 * 340 * 100 / 1000000 > 1000) {
+  //      Distance2 = 1000;
+  //    } else {
+  //      Distance2 = Duration2 * 340 * 100 / 1000000; // 音速を340m/sに設定
+  //    }
+  //  }
+  Distance2 = 3000;
 
   //sensor3
   digitalWrite(trigPin3, LOW);
@@ -142,7 +154,11 @@ void loop() { //=======================================loop=====================
   Duration3 = pulseIn( echoPin3, HIGH ); //センサからの入力
   if (Duration3 > 0) {
     Duration3 = Duration3 / 2; //往復距離を半分にする
-    Distance3 = Duration3 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    if (Duration3 * 340 * 100 / 1000000 > 1000) {
+      Distance3 = 1000;
+    } else {
+      Distance3 = Duration3 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    }
   }
 
   //sensor4
@@ -154,7 +170,11 @@ void loop() { //=======================================loop=====================
   Duration4 = pulseIn( echoPin4, HIGH ); //センサからの入力
   if (Duration4 > 0) {
     Duration4 = Duration4 / 2; //往復距離を半分にする
-    Distance4 = Duration4 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    if (Duration4 * 340 * 100 / 1000000 > 1000) {
+      Distance4 = 1000;
+    } else {
+      Distance4 = Duration4 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    }
   }
 
   //sensor5
@@ -166,7 +186,11 @@ void loop() { //=======================================loop=====================
   Duration5 = pulseIn( echoPin5, HIGH ); //センサからの入力
   if (Duration5 > 0) {
     Duration5 = Duration5 / 2; //往復距離を半分にする
-    Distance5 = Duration5 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    if (Duration5 * 340 * 100 / 1000000 > 1000) {
+      Distance5 = 1000;
+    } else {
+      Distance5 = Duration5 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    }
   }
 
   //sensor6
@@ -178,10 +202,14 @@ void loop() { //=======================================loop=====================
   Duration6 = pulseIn( echoPin6, HIGH ); //センサからの入力
   if (Duration6 > 0) {
     Duration6 = Duration6 / 2; //往復距離を半分にする
-    Distance6 = Duration6 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    if (Duration6 * 340 * 100 / 1000000 > 1000) {
+      Distance6 = 1000;
+    } else {
+      Distance6 = Duration6 * 340 * 100 / 1000000; // 音速を340m/sに設定
+    }
   }
 
-//  Distance6 = 150;
+  //  Distance6 = 150;
   //=====値の処理=====
   usNumber = 0;//リセット
   us1 = us2 = us3 = us4 = us5 = us6 = 0;//リセット
@@ -238,8 +266,8 @@ void loop() { //=======================================loop=====================
   //===========================================タッチセンサ================
   // ここの値はノイズをとる強さ：大きくするとノイズ◯/遅い : 小さくするとノイズ◯/速い
   tsVal1 = cs1.capacitiveSensor(30);
-  tsVal2 = cs2.capacitiveSensor(30);
-  tsVal3 = cs3.capacitiveSensor(30);
+  tsVal3 = cs2.capacitiveSensor(30);
+  tsVal2 = cs3.capacitiveSensor(30);
   tsVal4 = cs4.capacitiveSensor(30);
   tsNumber = 0;//リセット
   ts1 = ts2 = ts3 = ts4 = false;//リセット
@@ -259,6 +287,7 @@ void loop() { //=======================================loop=====================
     ts4 = true;
     tsNumber++;
   }
+
   //===========================================タッチセンサここまで================
   //放電
   //  delay(10);
