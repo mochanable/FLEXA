@@ -1,7 +1,7 @@
 # FLEXA
-##### FLEXA -the Flexible Anima- powered by Arduino Braccio®  
-#### UIST2017 Student Innovation Contest Honorable Mention Award
-### Most Creative
+#### FLEXA -the Flexible Anima- powered by Arduino Braccio®  
+### UIST2017 Student Innovation Contest 
+## Honorable Mention Award Most Creative
 
 ##### Created & Copyrighted by  
 ##### Team FLEXA  
@@ -9,7 +9,7 @@
 ###### Yusuke Maikuma  
 ###### Tatsuya Hasegawa  
 
-### ver 5.0 @2017_10_24
+#### ver 5.0 @2017_10_24
 * UIST2017 SICにてDemo発表
 * タッチセンサの位置に応じた動きを追加
 * 各種値を調整
